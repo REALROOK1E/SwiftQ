@@ -1,0 +1,19 @@
+<project>
+  <parent>
+    <groupId>com.swiftq</groupId>
+    <artifactId>swiftq</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>swiftq-common</artifactId>
+
+  <dependencies>
+    <!-- lombock 提升开发效率 -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.30</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
