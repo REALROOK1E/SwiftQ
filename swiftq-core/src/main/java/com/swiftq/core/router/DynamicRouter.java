@@ -120,4 +120,43 @@ public class DynamicRouter {
         public int getTotalRules() { return totalRules; }
         public Map<String, Integer> getRuleTypeCount() { return ruleTypeCount; }
     }
+
+    /**
+     * 路由消息到目标队列
+     * Route message to target queues
+     *
+     * @param message 待路由的消息
+     * @return 目标队列列表
+     */
+    public List<String> routeMessage(Message message) {
+        List<String> targetQueues = new ArrayList<>();
+
+        // 获取所有匹配的规则
+        List<RouteRule> matchingRules = getMatchingRules(message);
+
+        if (matchingRules.isEmpty()) {
+            // 如果没有匹配的规则，使用默认队列
+            targetQueues.add("default");
+            logger.debug("No matching rules for message {}, using default queue", message.getId());
+        } else {
+            // 收集所有匹配规则的目标队列
+            for (RouteRule rule : matchingRules) {
+                List<String> queues = rule.getTargetQueues();
+                if (queues != null && !queues.isEmpty()) {
+                    targetQueues.addAll(queues);
+                }
+            }
+
+            // 去重
+            targetQueues = targetQueues.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            logger.debug("Message {} routed to queues: {} by rules: {}",
+                    message.getId(), targetQueues,
+                    matchingRules.stream().map(RouteRule::getName).collect(Collectors.toList()));
+        }
+
+        return targetQueues;
+    }
 }

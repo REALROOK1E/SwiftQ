@@ -9,5 +9,7 @@
     <file url="file://$PROJECT_DIR$/swiftq-client/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/swiftq-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/swiftq-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/swiftq-core/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/swiftq-core/src/main/resources" charset="UTF-8" />
   </component>
 </project>

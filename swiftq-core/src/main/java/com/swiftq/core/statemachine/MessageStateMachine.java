@@ -62,10 +62,10 @@ public class MessageStateMachine {
         // RETRYING -> SENDING, DEAD
         transitions.put(MsgState.RETRYING, createSet(StateEvent.SEND, StateEvent.EXPIRE));
         
-        // CONFIRMED, DEAD 为终态
+        // CONFIRMED, DEAD_LETTER 为终态
         transitions.put(MsgState.CONFIRMED, new HashSet<>());
-        transitions.put(MsgState.DEAD, createSet(StateEvent.RESET));
-        
+        transitions.put(MsgState.DEAD_LETTER, createSet(StateEvent.RESET));
+
         return transitions;
     }
     
@@ -112,6 +112,19 @@ public class MessageStateMachine {
     }
     
     /**
+     * 处理状态事件 - transition方法的别名
+     * Handle state event - Alias for transition method
+     *
+     * @param event 待处理的事件 / Event to process
+     * @return true 如果状态转换成功 / true if transition succeeded
+     * @author Zekai
+     * @since 2025/8/5
+     */
+    public synchronized boolean handleEvent(StateEvent event) {
+        return transition(event);
+    }
+
+    /**
      * 获取下一个状态
      */
     private MsgState getNextState(MsgState currentState, StateEvent event) {
@@ -123,19 +136,19 @@ public class MessageStateMachine {
         switch (currentState) {
             case INIT:
                 if (event == StateEvent.SEND) return MsgState.SENDING;
-                if (event == StateEvent.EXPIRE) return MsgState.DEAD;
+                if (event == StateEvent.EXPIRE) return MsgState.DEAD_LETTER;
                 break;
                 
             case SENDING:
                 if (event == StateEvent.SENT) return MsgState.SENT;
                 if (event == StateEvent.FAIL) return MsgState.FAILED;
-                if (event == StateEvent.EXPIRE) return MsgState.DEAD;
+                if (event == StateEvent.EXPIRE) return MsgState.DEAD_LETTER;
                 break;
                 
             case SENT:
                 if (event == StateEvent.CONFIRM) return MsgState.CONFIRMED;
                 if (event == StateEvent.FAIL) return MsgState.FAILED;
-                if (event == StateEvent.EXPIRE) return MsgState.DEAD;
+                if (event == StateEvent.EXPIRE) return MsgState.DEAD_LETTER;
                 break;
                 
             case FAILED:
@@ -143,15 +156,15 @@ public class MessageStateMachine {
                     message.incrementRetry();
                     return MsgState.RETRYING;
                 }
-                if (event == StateEvent.EXPIRE || !message.canRetry()) return MsgState.DEAD;
+                if (event == StateEvent.EXPIRE || !message.canRetry()) return MsgState.DEAD_LETTER;
                 break;
                 
             case RETRYING:
                 if (event == StateEvent.SEND) return MsgState.SENDING;
-                if (event == StateEvent.EXPIRE) return MsgState.DEAD;
+                if (event == StateEvent.EXPIRE) return MsgState.DEAD_LETTER;
                 break;
                 
-            case DEAD:
+            case DEAD_LETTER:
                 if (event == StateEvent.RESET) return MsgState.INIT;
                 break;
         }

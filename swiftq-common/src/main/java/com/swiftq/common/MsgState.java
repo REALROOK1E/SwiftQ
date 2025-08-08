@@ -4,54 +4,127 @@ package com.swiftq.common;
  * 消息状态枚举 - 定义消息在系统中的各种状态
  * Message State Enum - Defines various states of messages in the system
  * 
- * 这个枚举定义了消息从创建到最终处理完成的所有可能状态
- * This enum defines all possible states from message creation to final processing
- * 
+ * 扩展的状态机，支持更复杂的消息生命周期管理
+ * Extended state machine supporting more complex message lifecycle management
+ *
  * @author Zekai
  * @since 2025/8/2
- * @version 1.0
+ * @version 2.0
  */
 public enum MsgState {
     
     /**
-     * 初始状态 - 消息刚刚创建，还没有开始处理
-     * Initial state - Message just created, not yet started processing
+     * 初始状态 - 消息刚刚创建
      */
     INIT,
     
     /**
-     * 发送中 - 消息正在发送过程中
-     * Sending - Message is in the process of being sent
+     * 防重检查中 - 正在进行消息去重检查
+     */
+    DEDUP_CHECKING,
+
+    /**
+     * 重复消息 - 检测到重复消息，被丢弃
+     */
+    DUPLICATE,
+
+    /**
+     * 限流检查中 - 正在进行令牌桶限流检查
+     */
+    RATE_LIMITING,
+
+    /**
+     * 限流阻塞 - 因为限流被临时阻塞
+     */
+    RATE_LIMITED,
+
+    /**
+     * 排队中 - 消息在队列中等待处理
+     */
+    QUEUED,
+
+    /**
+     * 顺序等待 - 等待前序消息处理完成（顺序消费）
+     */
+    ORDERING_WAIT,
+
+    /**
+     * 预处理中 - 消息预处理阶段
+     */
+    PREPROCESSING,
+
+    /**
+     * 发送中 - 消息正在发送
      */
     SENDING,
     
     /**
-     * 已发送 - 消息已经发送完成，等待确认
-     * Sent - Message has been sent, waiting for confirmation
+     * 发送暂停 - 发送被暂停（可恢复）
+     */
+    SEND_PAUSED,
+
+    /**
+     * 已发送 - 消息已发送，等待确认
      */
     SENT,
     
     /**
-     * 已确认 - 消息已经被成功接收和处理
-     * Confirmed - Message has been successfully received and processed
+     * 部分确认 - 部分消费者已确认（多播场景）
+     */
+    PARTIAL_CONFIRMED,
+
+    /**
+     * 已确认 - 消息完全确认
      */
     CONFIRMED,
     
     /**
-     * 发送失败 - 消息发送过程中出现错误
-     * Failed - Error occurred during message sending
+     * 发送失败 - 发送失败
      */
     FAILED,
     
     /**
-     * 重试中 - 消息正在进行重试处理
-     * Retrying - Message is being retried
+     * 重试准备 - 准备重试
+     */
+    RETRY_PREPARING,
+
+    /**
+     * 重试中 - 正在重试
      */
     RETRYING,
     
     /**
-     * 死信 - 消息多次重试失败，无法继续处理
-     * Dead letter - Message failed multiple retries and cannot be processed further
+     * 重试延迟 - 重试延迟等待中
      */
-    DEAD
+    RETRY_DELAYED,
+
+    /**
+     * 处理超时 - 处理超时
+     */
+    TIMEOUT,
+
+    /**
+     * 死信 - 最终失败，进入死信队列
+     */
+    DEAD_LETTER,
+
+    /**
+     * 已过期 - 消息过期
+     */
+    EXPIRED,
+
+    /**
+     * 已取消 - 消息被取消
+     */
+    CANCELLED,
+
+    /**
+     * 归档中 - 消息归档中
+     */
+    ARCHIVING,
+
+    /**
+     * 已归档 - 消息已归档
+     */
+    ARCHIVED
 }

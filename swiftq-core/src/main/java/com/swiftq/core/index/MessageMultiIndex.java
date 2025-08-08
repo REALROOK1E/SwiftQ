@@ -6,29 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import ja    /**
-     * 获取索引统计信息
-     */
-    public IndexStats getStats() {
-        return new IndexStats(
-                messageStore.size(),
-                tagIndex.size(),
-                topicIndex.size(),
-                priorityIndex.size(),
-                timeIndex.size()
-        );
-    }
-    
-    /**
-     * 获取消息总数
-     */
-    public int getMessageCount() {
-        return messageStore.size();
-    }
-    
-    /**
-     * 索引统计信息
-     */nt.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
 /**
@@ -159,6 +137,55 @@ public class MessageMultiIndex {
     }
     
     /**
+     * 根据主题查找消息
+     * Find messages by topic
+     *
+     * @param topic 主题名称
+     * @return 匹配的消息列表
+     */
+    public List<Message> findByTopic(String topic) {
+        Set<String> messageIds = topicIndex.getOrDefault(topic, Collections.emptySet());
+        return messageIds.stream()
+                .map(messageStore::get)
+                .filter(Objects::nonNull)
+                .sorted((m1, m2) -> Integer.compare(m2.getPriority(), m1.getPriority()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据标签查找消息
+     * Find messages by tag
+     *
+     * @param tag 标签名称
+     * @return 匹配的消息列表
+     */
+    public List<Message> findByTag(String tag) {
+        Set<String> messageIds = tagIndex.getOrDefault(tag, Collections.emptySet());
+        return messageIds.stream()
+                .map(messageStore::get)
+                .filter(Objects::nonNull)
+                .sorted((m1, m2) -> Integer.compare(m2.getPriority(), m1.getPriority()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据优先级范围查找消息
+     * Find messages by priority range
+     *
+     * @param minPriority 最小优先级
+     * @param maxPriority 最大优先级
+     * @return 匹配的消息列表
+     */
+    public List<Message> findByPriorityRange(int minPriority, int maxPriority) {
+        Set<String> messageIds = queryPriorityRange(minPriority, maxPriority);
+        return messageIds.stream()
+                .map(messageStore::get)
+                .filter(Objects::nonNull)
+                .sorted((m1, m2) -> Integer.compare(m2.getPriority(), m1.getPriority()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 优先级范围查询
      */
     private Set<String> queryPriorityRange(Integer minPriority, Integer maxPriority) {
@@ -241,6 +268,13 @@ public class MessageMultiIndex {
         );
     }
     
+    /**
+     * 获取消息总数
+     */
+    public int getMessageCount() {
+        return messageStore.size();
+    }
+
     /**
      * 索引统计信息
      */
